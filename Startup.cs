@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ColourAPI.Models;
+using DockerAPI.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,6 +29,16 @@ namespace DockerAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+             var server = Configuration["DBServer"] ?? "ms-sql-server";
+
+            var port = Configuration["DBPort"] ?? "1433";
+
+            var user = Configuration["DBUser"] ?? "SA";
+            var password = Configuration["DBPassword"] ?? "1Secure*Pass1";
+
+            var database = Configuration["Database"] ?? "Colours";
+
+            services.AddDbContext<ColourContext>(options=>options.UseSqlServer($"Server={server},{port};Initial Catalog={database};User ID = {user};Password={password}"));
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -54,6 +67,8 @@ namespace DockerAPI
             {
                 endpoints.MapControllers();
             });
+
+            PrepDB.PrepPopulation(app);
         }
     }
 }
